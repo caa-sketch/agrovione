@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroVione</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f3f6f4;--card:#fff;--ink:#14231b;--mute:#667a70;--line:#e1e8e4;--green:#16a34a;--green-s:#e3f5ea;--blue:#2563eb;--blue-s:#e5edff;--red:#dc2626;--amber:#d97706;--shadow:0 1px 2px rgba(20,35,27,.06),0 6px 20px rgba(20,35,27,.05);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+:root[data-theme=dark]{--bg:#0d1511;--card:#15201a;--ink:#e6f0ea;--mute:#8da498;--line:#25362d;--green:#34d27a;--green-s:#173a27;--blue:#6b9cff;--blue-s:#1b2a4d;--red:#f87171;--amber:#fbbf24;--shadow:none}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.45;transition:background .25s,color .25s}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.app{display:grid;grid-template-columns:320px minmax(0,1fr);min-height:100vh}
+.main{padding:20px 24px 40px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.panel{padding:16px 18px}
+h1{font-size:1.35rem;letter-spacing:-.01em}
+h2{font-size:1rem;font-weight:650}
+.sub{color:var(--mute);font-size:.88rem}
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--green);display:grid;place-items:center;color:#fff}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border:1px solid var(--line);border-radius:99px;background:var(--card);font-size:.82rem}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mute);flex:none}
+.ok .dot{background:var(--green);box-shadow:0 0 0 3px var(--green-s)}.err .dot{background:var(--red)}.warn .dot{background:var(--amber)}
+.clock{text-align:right;font-variant-numeric:tabular-nums;line-height:1.2}.clock b{font-size:1.1rem;display:block}.clock span{font-size:.78rem;color:var(--mute)}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
+#menuBtn{display:none}
+.banner{padding:11px 14px;border-radius:10px;background:#fef3c7;color:#78350f;border:1px solid #fcd34d;font-size:.9rem}
+.banner.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
+:root[data-theme=dark] .banner{background:#3a2d0c;color:#fde68a;border-color:#6b5217}:root[data-theme=dark] .banner.bad{background:#3d1717;color:#fecaca;border-color:#7f2a2a}
+.ctrl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{padding:9px 18px;border-radius:10px;border:1px solid transparent;font-weight:600;display:inline-flex;gap:7px;align-items:center;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.start{background:var(--green);color:#fff}.stop{background:var(--red);color:#fff}
+.ghost{background:var(--card);border-color:var(--line)}.danger{background:var(--card);border-color:var(--red);color:var(--red)}
+select,input{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);width:auto}
+.state{font-weight:600}.state.on{color:var(--green)}.state.off{color:var(--mute)}.state.lost{color:var(--red)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.metric{padding:20px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.metric .ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center}
+.t .ic{background:var(--green-s);color:var(--green)}.h .ic{background:var(--blue-s);color:var(--blue)}
+.val{font-size:3.4rem;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.val small{font-size:1.4rem;font-weight:500;color:var(--mute);margin-left:4px}
+.tag{font-size:.8rem;padding:3px 9px;border-radius:99px;background:var(--green-s);color:var(--green);width:fit-content;font-weight:600}
+.tag.w{background:#fef3c7;color:#92400e}.tag.n{background:var(--line);color:var(--mute)}
+.mm{display:flex;gap:16px;font-size:.82rem;color:var(--mute);margin-top:4px}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}
+.chartbox{position:relative;height:250px;margin-top:10px}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--mute);font-size:.9rem;text-align:center;pointer-events:none}
+.head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.tw{overflow-x:auto;margin-top:12px;max-height:420px}
+table{width:100%;border-collapse:collapse;font-size:.9rem;font-variant-numeric:tabular-nums}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--card);color:var(--mute);font-weight:600;font-size:.82rem}
+tbody tr.new{animation:flash 1.2s}@keyframes flash{from{background:var(--green-s)}to{background:transparent}}
+aside{order:-1;background:var(--card);border-right:1px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:20px;position:sticky;top:0;height:100vh;overflow-y:auto}
+nav{display:flex;flex-direction:column;gap:4px}
+nav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;color:var(--ink);text-decoration:none;font-weight:550}
+nav a:hover{background:var(--bg)}nav a.act{background:var(--green-s);color:var(--green)}
+.side-sec{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:16px}
+label{font-size:.82rem;color:var(--mute);display:flex;flex-direction:column;gap:4px}
+label input,label select{width:100%;color:var(--ink)}
+.kv{display:flex;justify-content:space-between;font-size:.85rem;gap:8px}.kv span:first-child{color:var(--mute)}
+.note{font-size:.78rem;color:var(--mute)}
+#ov{display:none}
+dialog{border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--card);color:var(--ink);max-width:380px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+#toasts{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:50;width:max-content;max-width:92vw}
+.toast{background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.9rem;animation:up .25s}@keyframes up{from{opacity:0;transform:translateY(8px)}}
+@media(max-width:960px){
+ .app{grid-template-columns:1fr}.main{padding:16px 14px 40px}
+ #menuBtn{display:grid}
+ aside{position:fixed;left:0;top:0;width:min(320px,88vw);z-index:40;transform:translateX(-100%);transition:transform .25s;box-shadow:10px 0 30px rgba(0,0,0,.2)}
+ body.open aside{transform:none}
+ body.open #ov{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30}
+ .val{font-size:2.8rem}.clock{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="main">
+ <header class="top">
+  <div class="brand">
+   <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V10"/><path d="M12 10c0-4 3-7 8-7 0 5-3 8-8 7z"/><path d="M12 14c0-3-2-5-6-5 0 4 2 6 6 5z"/></svg></div>
+   <div><h1>AgroVione</h1><div class="sub">Sistem Monitoring Agroklimatologi</div></div>
+  </div>
+  <div class="tools">
+   <span class="chip" id="chipHw"><i class="dot"></i><span>ESP32: belum diketahui</span></span>
+   <span class="chip" id="chipBl"><i class="dot"></i><span>Blynk: belum dikonfigurasi</span></span>
+   <div class="clock"><b id="clk">--:--:--</b><span id="dt"></span></div>
+   <button class="icon-btn" id="theme" title="Ganti tema" aria-label="Ganti tema terang/gelap"></button>
+   <button class="icon-btn" id="menuBtn" aria-label="Buka menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  </div>
+ </header>
+
+ <div id="banner" class="banner" hidden></div>
+
+ <section class="panel ctrl" id="kontrol">
+  <div class="row">
+   <button class="btn start" id="start">▶ START</button>
+   <button class="btn stop" id="stop" disabled>■ STOP</button>
+   <label style="flex-direction:row;align-items:center;gap:8px">Interval baca
+    <select id="intv"><option value="2">2 detik</option><option value="5" selected>5 detik</option><option value="10">10 detik</option><option value="30">30 detik</option><option value="60">1 menit</option></select>
+   </label>
+  </div>
+  <div>Status monitoring: <span class="state off" id="state">Berhenti</span></div>
+ </section>
+
+ <section class="cards" id="dashboard">
+  <div class="card metric t">
+   <div class="row" style="justify-content:space-between"><div><h2>Suhu Udara</h2><div class="sub">Sensor DHT22 · V0</div></div>
+   <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V4a2 2 0 0 0-4 0v10.76a4 4 0 1 0 4 0z"/></svg></div></div>
+   <div class="val"><span id="vT">--</span><small>°C</small></div>
+   <span class="tag n" id="gT">Menunggu data</span>
+   <div class="mm"><span>Min <b id="mnT">--</b></span><span>Maks <b id="mxT">--</b></span><span>Rata-rata <b id="avT">--</b></span></div>
+  </div>
+  <div class="card metric h">
+   <div class="row" style="justify-content:space-between"><div><h2>Kelembapan Udara</h2><div class="sub">Sensor DHT22 · V1</div></div>
+   <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s7 7.2 7 12.3a7 7 0 0 1-14 0c0-5.1 7-12.3 7-12.3z"/></svg></div></div>
+   <div class="val"><span id="vH">--</span><small>%</small></div>
+   <span class="tag n" id="gH">Menunggu data</span>
+   <div class="mm"><span>Min <b id="mnH">--</b></span><span>Maks <b id="mxH">--</b></span><span>Rata-rata <b id="avH">--</b></span></div>
+  </div>
+ </section>
+
+ <section id="grafik">
+  <div class="head" style="margin-bottom:10px"><h2>Grafik monitoring</h2>
+   <label style="flex-direction:row;align-items:center;gap:8px">Rentang waktu
+    <select id="range"><option value="5">5 menit</option><option value="15" selected>15 menit</option><option value="60">1 jam</option><option value="360">6 jam</option><option value="0">Semua data</option></select></label></div>
+  <div class="charts">
+   <div class="panel"><h2>Suhu udara (°C)</h2><div class="chartbox"><canvas id="cT"></canvas><div class="empty" id="eT">Belum ada data. Tekan START setelah koneksi Blynk diatur.</div></div></div>
+   <div class="panel"><h2>Kelembapan udara (%)</h2><div class="chartbox"><canvas id="cH"></canvas><div class="empty" id="eH">Belum ada data. Tekan START setelah koneksi Blynk diatur.</div></div></div>
+  </div>
+ </section>
+
+ <section class="panel" id="riwayat">
+  <div class="head"><h2>Riwayat pembacaan</h2>
+   <div class="row">
+    <input type="date" id="fDate" aria-label="Filter tanggal">
+    <button class="btn ghost" id="fClear">Semua tanggal</button>
+    <button class="btn ghost" id="csv">⬇ Ekspor CSV</button>
+    <button class="btn danger" id="del">Hapus riwayat</button>
+   </div></div>
+  <div class="tw"><table><thead><tr><th>No</th><th>Waktu dan tanggal</th><th>Suhu (°C)</th><th>Kelembapan (%)</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <div class="note" id="tinfo" style="margin-top:8px"></div>
+ </section>
+</div>
+
+<aside id="side">
+ <div class="row" style="justify-content:space-between"><b>Menu</b><button class="icon-btn" id="closeBtn" aria-label="Tutup menu" style="display:none">✕</button></div>
+ <nav id="nav">
+  <a href="#kontrol" class="act">Kontrol</a><a href="#dashboard">Parameter sensor</a><a href="#grafik">Grafik</a><a href="#riwayat">Riwayat data</a>
+ </nav>
+ <div class="side-sec" id="koneksi" hidden>
+  <h2>Koneksi Blynk IoT</h2>
+  <label>Metode
+   <select id="mode"><option value="proxy">Server proxy (disarankan)</option><option value="direct">Langsung dari browser</option></select></label>
+  <div id="directBox" class="side-sec" style="border:0;padding:0">
+   <label>Server Blynk<select id="host"><option>blynk.cloud</option><option>sgp1.blynk.cloud</option><option>blr1.blynk.cloud</option><option>fra1.blynk.cloud</option><option>lon1.blynk.cloud</option><option>ny3.blynk.cloud</option></select></label>
+   <label>Blynk Auth Token<input type="password" id="token" autocomplete="off" placeholder="Tempel token perangkat"></label>
+   
+  </div>
+  <div id="proxyBox" class="note">Token dibaca server dari variabel lingkungan <code>BLYNK_TOKEN</code>, jadi tidak pernah dikirim ke browser.</div>
+  <label>Template ID (opsional)<input id="tpl" placeholder="TMPLxxxxxxx"></label>
+  <label>Device Name<input id="dev" placeholder="mis. ESP32-Kebun"></label>
+  <button class="btn ghost" id="test">Simpan dan uji koneksi</button>
+ </div>
+ <div class="side-sec">
+  <h2>Info perangkat</h2>
+  <div class="kv"><span>Perangkat</span><b id="iDev">ESP32 · DHT22</b></div>
+  <div class="kv"><span>Data terakhir</span><b id="iLast">—</b></div>
+  <div class="kv"><span>Jumlah data</span><b id="iCnt">0</b></div>
+ </div>
+</aside>
+</div>
+<div id="ov"></div>
+<dialog id="dlg"><h2>Hapus semua riwayat?</h2><p class="sub" style="margin:8px 0 16px">Seluruh data pembacaan yang tersimpan di browser ini akan dihapus dan tidak bisa dikembalikan.</p>
+ <div class="row" style="justify-content:flex-end"><button class="btn ghost" id="no">Batal</button><button class="btn stop" id="yes">Hapus</button></div></dialog>
+<div id="toasts"></div>
+
+<script>
+const $=s=>document.querySelector(s), pad=n=>String(n).padStart(2,'0');
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const cfg=Object.assign({mode:location.protocol==='file:'?'direct':'proxy',host:'blynk.cloud',tpl:'',dev:''},ls.get('acm_cfg',{}));
+cfg.token=''; // token hanya di memori
+let data=ls.get('acm_data',[]), timer=null, running=false, seq=data.length?data[data.length-1].n:0, hwOnline=null, lastErr=false;
+
+/* ---------- util ---------- */
+function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;$('#toasts').append(e);setTimeout(()=>e.remove(),3200)}
+function banner(m,bad){const b=$('#banner');b.hidden=!m;b.textContent=m||'';b.className='banner'+(bad?' bad':'')}
+function chip(id,cls,text){const c=$(id);c.className='chip '+cls;c.lastElementChild.textContent=text}
+const fmtT=ts=>{const d=new Date(ts);return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`};
+const dayKey=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+function statusOf(t,h){const s=[];if(t>=35)s.push('Panas');else if(t<=15)s.push('Dingin');if(h>=90)s.push('Sangat lembap');else if(h<=40)s.push('Kering');return s.length?s.join(', '):'Normal'}
+
+/* ---------- jam & tema ---------- */
+setInterval(()=>{const d=new Date();$('#clk').textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;$('#dt').textContent=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})},1000);
+const SUN='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>';
+function setTheme(t){document.documentElement.dataset.theme=t;$('#theme').innerHTML=t==='dark'?SUN:MOON;ls.set('acm_theme',t);if(window.charts)styleCharts()}
+$('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+setTheme(ls.get('acm_theme',matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+
+/* ---------- sidebar ---------- */
+const openSide=o=>{document.body.classList.toggle('open',o);$('#closeBtn').style.display=o?'grid':'none'};
+$('#menuBtn').onclick=()=>openSide(true);$('#closeBtn').onclick=$('#ov').onclick=()=>openSide(false);
+$('#nav').addEventListener('click',e=>{const a=e.target.closest('a');if(!a)return;document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('act',x===a));openSide(false)});
+
+/* ---------- konfigurasi ---------- */
+function syncCfgUI(){$('#mode').value=cfg.mode;$('#host').value=cfg.host;$('#tpl').value=cfg.tpl;$('#dev').value=cfg.dev;$('#directBox').hidden=cfg.mode!=='direct';$('#proxyBox').hidden=cfg.mode!=='proxy'}
+function readCfg(){cfg.mode=$('#mode').value;cfg.host=$('#host').value;cfg.tpl=$('#tpl').value.trim();cfg.dev=$('#dev').value.trim();if(cfg.mode==='direct'&&$('#token').value.trim())cfg.token=$('#token').value.trim();const {token,...safe}=cfg;ls.set('acm_cfg',safe);syncCfgUI()}
+$('#mode').onchange=()=>{$('#directBox').hidden=$('#mode').value!=='direct';$('#proxyBox').hidden=$('#mode').value!=='proxy'};
+$('#test').onclick=async()=>{readCfg();toast('Menguji koneksi…');const ok=await poll(true);toast(ok?'Koneksi Blynk berhasil':'Koneksi gagal, lihat pesan di atas')};
+syncCfgUI();
+
+/* ---------- pengambilan data Blynk ---------- */
+const API='https://agrovione-api.seraphicczz.workers.dev/api/data';
+async function fetchBlynk(){
+ const r=await fetch(API,{cache:'no-store'});
+ if(!r.ok)throw new Error('Server data menjawab HTTP '+r.status);
+ const j=await r.json();
+ if(j.error)throw new Error('API melaporkan: '+j.error);
+ return {v0:j.suhu,v1:j.kelembapan,online:typeof j.online==='boolean'?j.online:null};
+}
+async function poll(testOnly){
+ try{
+  const r=await fetchBlynk();
+  lastErr=false;chip('#chipBl','ok','Blynk: terhubung');
+  hwOnline=r.online;
+  if(r.online===true)chip('#chipHw','ok','ESP32: online');else if(r.online===false)chip('#chipHw','err','ESP32: offline');
+  if(r.online===false){banner('ESP32 terputus dari Blynk. Periksa daya, WiFi, dan sketch di Arduino IDE. Data tidak dicatat selama perangkat offline.',true);setState('lost');return !!testOnly}
+  const t=parseFloat(r.v0),h=parseFloat(r.v1);
+  if(isNaN(t)||isNaN(h)){banner('Blynk terhubung tetapi V0/V1 belum berisi angka. Pastikan sketch menulis Blynk.virtualWrite(V0, suhu) dan (V1, kelembapan).');return !!testOnly}
+  if(t<-40||t>80||h<0||h>100){banner(`Nilai di luar jangkauan DHT22 (suhu ${t}, kelembapan ${h}). Data diabaikan, periksa kabel sensor.`,true);return !!testOnly}
+  banner('');if(running)setState('on');
+  if(!testOnly||running)addRecord(t,h);
+  return true;
+ }catch(e){
+  lastErr=true;chip('#chipBl','err','Blynk: gagal');chip('#chipHw','','ESP32: belum diketahui');
+  banner(e.message==='Failed to fetch'?'Tidak dapat menjangkau server data. Periksa koneksi internet atau pengaturan CORS pada Worker Cloudflare.':e.message,true);
+  if(running)setState('lost');return false;
+ }
+}
+function emptyMsg(){$('#eT').hidden=$('#eH').hidden=running||!!visible().length}
+function setState(s){const e=$('#state');e.className='state '+s;e.textContent={on:'Aktif',off:'Berhenti',lost:'Tidak terhubung'}[s]}
+function schedule(){clearInterval(timer);timer=setInterval(poll,+$('#intv').value*1000)}
+$('#start').onclick=()=>{readCfg();running=true;$('#start').disabled=true;$('#stop').disabled=false;setState(lastErr?'lost':'on');toast('Monitoring dimulai');emptyMsg();poll();schedule()};
+$('#stop').onclick=()=>{running=false;clearInterval(timer);$('#start').disabled=false;$('#stop').disabled=true;setState('off');toast('Monitoring dihentikan');emptyMsg()};
+$('#intv').onchange=()=>{if(running){schedule();toast('Interval diubah')}};
+
+/* ---------- data ---------- */
+function addRecord(t,h){
+ const ts=Date.now();seq++;data.push({n:seq,ts,t,h,s:statusOf(t,h)});
+ if(data.length>2000)data=data.slice(-2000);
+ ls.set('acm_data',data);render(true);
+}
+function visible(){const m=+$('#range').value;return m?data.filter(d=>d.ts>=Date.now()-m*60000):data}
+function tag(el,s){el.textContent=s;el.className='tag'+(s==='Normal'?'':' w')}
+function render(fresh){
+ const last=data[data.length-1],v=visible();
+ if(last){$('#vT').textContent=last.t.toFixed(1);$('#vH').textContent=last.h.toFixed(1);
+  tag($('#gT'),last.t>=35?'Panas':last.t<=15?'Dingin':'Normal');tag($('#gH'),last.h>=90?'Sangat lembap':last.h<=40?'Kering':'Normal');
+  $('#iLast').textContent=fmtT(last.ts).slice(11)}
+ $('#iCnt').textContent=data.length;
+ const st=(k,id)=>{if(!v.length)return;const a=v.map(d=>d[k]);$('#mn'+id).textContent=Math.min(...a).toFixed(1);$('#mx'+id).textContent=Math.max(...a).toFixed(1);$('#av'+id).textContent=(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)};
+ st('t','T');st('h','H');
+ charts.T.data.labels=v.map(d=>fmtT(d.ts).slice(11));charts.T.data.datasets[0].data=v.map(d=>d.t);
+ charts.H.data.labels=charts.T.data.labels;charts.H.data.datasets[0].data=v.map(d=>d.h);
+ charts.T.update();charts.H.update();emptyMsg();
+ renderTable(fresh);
+}
+function filtered(){const f=$('#fDate').value;return data.filter(d=>!f||dayKey(d.ts)===f).slice().reverse()}
+function renderTable(fresh){
+ const rows=filtered(),tb=$('#tb');
+ tb.innerHTML=rows.slice(0,200).map((d,i)=>`<tr${fresh&&i===0?' class="new"':''}><td>${d.n}</td><td>${fmtT(d.ts)}</td><td>${d.t.toFixed(1)}</td><td>${d.h.toFixed(1)}</td><td>${d.s}</td></tr>`).join('')||'<tr><td colspan="5" class="sub">Belum ada data tercatat. Sambungkan Blynk lalu tekan START.</td></tr>';
+ $('#tinfo').textContent=rows.length?`Menampilkan ${Math.min(rows.length,200)} dari ${rows.length} data (terbaru di atas).`:'';
+}
+$('#fDate').onchange=()=>renderTable();$('#fClear').onclick=()=>{$('#fDate').value='';renderTable()};
+$('#range').onchange=()=>render();
+$('#csv').onclick=()=>{const rows=filtered().reverse();if(!rows.length)return toast('Tidak ada data untuk diekspor');
+ const csv='\ufeffNo,Waktu,Suhu (C),Kelembapan (%),Status\n'+rows.map(d=>[d.n,fmtT(d.ts),d.t,d.h,d.s].join(',')).join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`agrovione-${dayKey(Date.now())}.csv`;a.click();URL.revokeObjectURL(a.href);toast('CSV diekspor')};
+$('#del').onclick=()=>$('#dlg').showModal();$('#no').onclick=()=>$('#dlg').close();
+$('#yes').onclick=()=>{data=[];seq=0;ls.set('acm_data',[]);$('#dlg').close();$('#vT').textContent=$('#vH').textContent='--';['gT','gH'].forEach(i=>{$('#'+i).textContent='Menunggu data';$('#'+i).className='tag n'});['mnT','mxT','avT','mnH','mxH','avH'].forEach(i=>$('#'+i).textContent='--');render();toast('Riwayat dihapus')};
+
+/* ---------- grafik ---------- */
+function mk(id,color){return new Chart($(id),{type:'line',data:{labels:[],datasets:[{data:[],borderColor:color,backgroundColor:color+'22',fill:true,tension:.35,pointRadius:2,pointHoverRadius:6,borderWidth:2}]},
+ options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},interaction:{mode:'index',intersect:false},plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:6,maxRotation:0},grid:{display:false},title:{display:true,text:'Waktu'}},y:{grace:'10%',grid:{}}}}})}
+window.charts={T:mk('#cT','#16a34a'),H:mk('#cH','#2563eb')};
+function styleCharts(){const cs=getComputedStyle(document.documentElement),mute=cs.getPropertyValue('--mute').trim(),line=cs.getPropertyValue('--line').trim();
+ charts.T.data.datasets[0].borderColor=cs.getPropertyValue('--green').trim();charts.H.data.datasets[0].borderColor=cs.getPropertyValue('--blue').trim();
+ charts.T.data.datasets[0].backgroundColor=charts.T.data.datasets[0].borderColor+'22';charts.H.data.datasets[0].backgroundColor=charts.H.data.datasets[0].borderColor+'22';
+ for(const c of Object.values(charts)){c.options.scales.x.ticks.color=c.options.scales.y.ticks.color=c.options.scales.x.title.color=mute;c.options.scales.y.grid.color=line;c.update()}
+ charts.T.options.scales.y.title={display:true,text:'°C',color:mute};charts.H.options.scales.y.title={display:true,text:'%',color:mute};charts.T.update();charts.H.update()}
+styleCharts();render();
+$('#start').click();
+</script>
+</body>
+</html>
